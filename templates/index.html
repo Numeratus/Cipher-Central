@@ -1,0 +1,523 @@
+{% extends "layout.html" %}
+
+{% block title %}Cipher Central{% endblock %}
+
+{% block content %}
+    <h1 class="site-title text-center">Cipher Central</h1>
+    <h3 class="site-subtitle text-center mb-4">A centralized hub for all your encryption and decryption needs.</h3>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-4 justify-content-center" id="actionTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="encrypt-tab" data-bs-toggle="tab" type="button" role="tab" aria-selected="true">Encrypt</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="decrypt-tab" data-bs-toggle="tab" type="button" role="tab" aria-selected="false">Decrypt</button>
+    </li>
+</ul>
+
+<!-- Encryption/Decryption Form -->
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <form method="POST" action="/" enctype="multipart/form-data">
+            <!-- CSRF protection -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" id="selected_action" name="action" value="encrypt">
+                <div class="mb-3">
+                    <label for="encryption_type" class="form-label">
+                        Select encryption type:
+                    <!-- Info icon with tooltip link -->
+                        <a href="/encryption_info" class="text-decoration-none" data-bs-toggle="tooltip" title="Click to learn more about these methods">
+                            <i class="bi bi-info-circle"></i>
+                        </a>
+                    </label>
+                    <select id="encryption_type" name="encryption_type" class="form-select">
+                        <option value="" selected disabled>Select the encryption type</option>
+                        <option value="aes" data-description="AES is a robust symmetric encryption algorithm for secure data handling.">AES Encryption</option>
+                        <option value="base64" data-description="Encodes data in an ASCII string format; useful for obfuscation, not true encryption.">Base64</option>
+                        <option value="blowfish" data-description="Blowfish is a symmetric cipher that requires a key for encryption and decryption.">Blowfish</option>
+                        <option value="caesar" data-description="A simple substitution cipher that shifts letters by a fixed number of positions.">Caesar Cipher</option>
+                        <option value="chacha20" data-description="ChaCha20 is a fast and modern stream cipher that requires a 32-byte key.">ChaCha20</option>
+                        <option value="rot13" data-description="A variant of Caesar Cipher using a fixed shift of 13.">ROT13</option>
+                        <option value="vigenere" data-description="Encrypts the given text using the Vigenère cipher with the specified keyword.">Vigenère cipher</option>
+
+                    </select>
+                <!-- Dedicated container for the description -->
+                    <div id="encryption-description" class="mt-2 text-muted"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="message" class="form-label">Enter your message:</label>
+                    <textarea id="message" name="message" class="form-control" rows="4" required></textarea>
+                </div>
+
+                <div class="text-center my-3">
+                    <strong id="file-message-divider">OR</strong>
+                </div>
+
+            <!-- File upload input -->
+                <div class="mb-3">
+                    <label for="file" class="form-label">Upload a file:</label>
+                    <input type="file" id="file" name="file" class="form-control">
+                </div>
+
+                <div class="mb-3" id="aes-key-container" style="display: none;">
+                    <label for="aes_key" class="form-label"> <strong>OPTIONAL:</strong> Use my own AES Key (16/24/32 characters):</label>
+                    <div class="input-group">
+                        <input type="text" id="aes_key" name="aes_key" class="form-control"
+                               minlength="16" maxlength="32">
+                        <button class="btn btn-outline-secondary" type="button" onclick="generateAESKey()">
+                            Generate
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyKey('aes_key')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" onclick="handleSaveKey('aes')">
+                            Save
+                        </button>
+                    </div>
+                    <div id="aes-save-alert" class="text-danger small mt-1" style="display: none;"></div>
+                </div>
+
+                <div class="mb-3" id="blowfish-key-container" style="display: none;">
+                    <label for="blowfish_key" class="form-label">Blowfish Key (4-56 characters):</label>
+                    <div class="input-group">
+                        <input type="text" id="blowfish_key" name="blowfish_key" class="form-control"
+                               data-minlength="4" data-maxlength="56">
+                        <button class="btn btn-outline-secondary" type="button" onclick="generateBlowfishKey()">
+                            Generate
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyKey('blowfish_key')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" onclick="handleSaveKey('blowfish')">
+                            Save
+                        </button>
+                    </div>
+                    <div id="blowfish-save-alert" class="text-danger small mt-1" style="display: none;"></div>
+                </div>
+
+                <div class="mb-3" id="caesar-shift-container" style="display: none;">
+                    <label for="shift" class="form-label">Enter Shift Value:</label>
+                    <input type="number" id="shift" name="shift" class="form-control" min="1" max="25">
+                </div>
+                <div class="mb-3" id="chacha20-key-container" style="display: none;">
+                    <label for="chacha20_key" class="form-label">ChaCha20 Key (64 hex characters):</label>
+                    <div class="input-group">
+                        <input type="text" id="chacha20_key" name="chacha20_key" class="form-control"
+                               pattern="[0-9a-fA-F]{64}" title="64 hexadecimal characters">
+                        <button class="btn btn-outline-secondary" type="button" onclick="generateChaCha20Key()">
+                            Generate
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyKey('chacha20_key')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" onclick="handleSaveKey('chacha20')">
+                            Save
+                        </button>
+                    </div>
+                    <div id="chacha20-save-alert" class="text-danger small mt-1" style="display: none;"></div>
+                </div>
+
+                <div class="mb-3" id="vigenere-key-container" style="display: none;">
+                    <label for="vigenere_key" class="form-label">Enter your Keyword:</label>
+                    <input type="text" id="vigenere_key" name="vigenere_key" class="form-control"
+                        pattern="[A-Za-z]+" title="Letters only">
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <button type="submit" class="btn btn-primary me-2" id="submit-button">Encrypt</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+<!-- Display the result if available -->
+        {% if result %}
+            <div class="alert alert-info mt-4" role="alert" id="result-alert">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Result:</strong> <span id="result-text">{{ result }}</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" id="copy-btn">
+                        Copy
+                    </button>
+                </div>
+            </div>
+
+
+
+        {% if session.user_id %}
+        <div class="mt-3 text-center">
+            <a href="{{ url_for('keys.history') }}" class="btn btn-outline-primary">
+                <i class="fas fa-history me-2"></i>View History
+            </a>
+        </div>
+    {% else %}
+        <div class="mt-3 text-center">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-success">
+                <i class="fas fa-sign-in-alt me-2"></i>Login to Save History
+            </a>
+        </div>
+
+        {% endif %}
+    {% endif %}
+{% endblock %}
+{% block script %}
+<script>
+
+// Key Generation
+
+function generateAESKey() {
+    const length = prompt("Choose AES key length (16, 24, or 32 bytes):", "32");
+    const validLengths = [16, 24, 32];
+    const parsedLength = parseInt(length);
+
+    if (!validLengths.includes(parsedLength)) {
+        alert("Invalid length. Please choose 16, 24, or 32.");
+        return;
+    }
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+    let key = '';
+    // Generate cryptographically secure random values
+    const randomValues = new Uint8Array(parsedLength);
+    window.crypto.getRandomValues(randomValues);
+
+    // Map random values to the character set
+    for (let i = 0; i < parsedLength; i++) {
+        key += chars[randomValues[i] % chars.length];
+    }
+    document.getElementById('aes_key').value = key;
+}
+
+// Blowish key generation
+function generateBlowfishKey() {
+    const length = Math.floor(Math.random() * (56 - 4 + 1)) + 4;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+    let key = '';
+    for (let i = 0; i < length; i++) {
+        key += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('blowfish_key').value = key;
+}
+
+
+// ChaCha20 key generation
+function generateChaCha20Key() {
+    const array = new Uint8Array(32);
+    window.crypto.getRandomValues(array);
+    const hexKey = Array.from(array, byte =>
+        byte.toString(16).padStart(2, '0')).join('');
+    document.getElementById('chacha20_key').value = hexKey;
+}
+
+// Key Saving
+function handleSaveKey(algorithm) {
+    const isLoggedIn = document.body.dataset.userLoggedIn === 'true';
+    const alertId = `${algorithm}-save-alert`;
+
+    if (!isLoggedIn) {
+        document.getElementById(alertId).textContent =
+            'Please login to save keys!';
+        document.getElementById(alertId).style.display = 'block';
+        setTimeout(() => {
+            document.getElementById(alertId).style.display = 'none';
+        }, 3000);
+        return;
+    }
+
+    const keyValue = document.getElementById(`${algorithm}_key`).value;
+    const keyName = prompt(`Enter a name for this ${algorithm} key:`);
+
+    if (keyName) {
+        saveKeyToServer(algorithm, keyName, keyValue);
+    }
+}
+
+async function saveKeyToServer(algorithm, keyName, keyValue) {
+    try {
+        const response = await fetch('/keys', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'csrf_token': document.querySelector('input[name="csrf_token"]').value,
+                'store_key': 'true',
+                'key_name': keyName,
+                'key_value': keyValue,
+                'algorithm': algorithm,
+            })
+        });
+
+        if (response.ok) {
+            alert('Key saved successfully!');
+        } else {
+            alert('Error saving key');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to save key');
+    }
+}
+
+function copyKey(inputId) {
+    const keyInput = document.getElementById(inputId);
+    if (keyInput && keyInput.value) {
+        navigator.clipboard.writeText(keyInput.value).then(() => {
+            const toast = new bootstrap.Toast(document.getElementById('copyToast'));
+            toast.show();
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Copy-to-clipboard functionality
+    const copyBtn = document.getElementById('copy-btn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            const resultText = document.getElementById('result-text').innerText;
+            navigator.clipboard.writeText(resultText).then(() => {
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        });
+    }
+
+    // Tab change event handling
+    const tabEls = document.querySelectorAll('#actionTabs .nav-link');
+    tabEls.forEach(tabEl => {
+        tabEl.addEventListener('click', function(event) {
+            const action = event.target.id === 'encrypt-tab' ? 'encrypt' : 'decrypt';
+            document.getElementById('selected_action').value = action;
+            document.getElementById('submit-button').textContent = action.charAt(0).toUpperCase() + action.slice(1);
+            toggleInputFields();
+        });
+    });
+
+    // Dark mode toggle functionality
+    const toggleThemeBtn = document.getElementById('toggle-theme');
+    if (toggleThemeBtn) {
+        toggleThemeBtn.addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        });
+    }
+    // Load dark mode preference from localStorage
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+    }
+
+    // Encryption type description tooltip
+    const encryptionSelect = document.getElementById('encryption_type');
+    if (encryptionSelect) {
+        let tooltipSpan = document.createElement('span');
+        tooltipSpan.id = 'tooltip-description';
+        tooltipSpan.className = 'ms-2';
+        encryptionSelect.parentNode.insertBefore(tooltipSpan, encryptionSelect.nextSibling);
+
+        function updateTooltip() {
+            const selectedOption = encryptionSelect.options[encryptionSelect.selectedIndex];
+            tooltipSpan.textContent = selectedOption.getAttribute('data-description') || '';
+        }
+        encryptionSelect.addEventListener('change', updateTooltip);
+        updateTooltip();
+        toggleInputFields();
+    }
+
+    document.getElementById('encryption_type').addEventListener('change', function() {
+    const method = this.value;
+    const action = document.getElementById('selected_action').value;
+
+    document.getElementById('encryption_type').addEventListener('change', function() {
+        const method = this.value;
+        const action = document.getElementById('selected_action').value;
+
+        const messageField = document.getElementById('message');
+        const fileField = document.getElementById('file');
+            messageField.placeholder = 'Enter your message';
+            messageField.readOnly = false;
+            fileField.required = false;
+
+    });
+    });
+
+    // After initializing the tooltip
+    document.getElementById('encrypt-tab').click(); // Activate default tab
+    updateTooltip(); // Ensure description is shown
+    toggleInputFields(); // Initial field setup
+
+    // Get form and input field containers
+    const blowfishContainer = document.getElementById('blowfish-key-container');
+    const shiftContainer = document.getElementById('caesar-shift-container');
+    const chacha20KeyContainer = document.getElementById('chacha20-key-container');
+    const vigenereContainer = document.getElementById('vigenere-key-container');
+    const form = document.querySelector('form');
+
+    // Toggle input fields based on selected encryption type and action button focus
+    function toggleInputFields() {
+        const selectedMethod = encryptionSelect.value;
+        const action = document.getElementById('selected_action').value;
+        const divider = document.getElementById('file-message-divider');
+
+
+         // Safe element handling
+        const toggleElement = (id, condition) => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = condition ? 'block' : 'none';
+        };
+
+        // Toggle visibility of input fields
+        document.getElementById('aes-key-container').style.display =
+            selectedMethod === 'aes' ? 'block' : 'none';
+        document.getElementById('blowfish-key-container').style.display =
+            selectedMethod === 'blowfish' ? 'block' : 'none';
+        document.getElementById('caesar-shift-container').style.display =
+            selectedMethod === 'caesar' ? 'block' : 'none';
+        document.getElementById('chacha20-key-container').style.display =
+            selectedMethod === 'chacha20' ? 'block' : 'none';
+        document.getElementById('vigenere-key-container').style.display =
+            selectedMethod === 'vigenere' ? 'block' : 'none';
+    }
+
+        // Ensure the message field is visible
+        const messageField = document.getElementById('message');
+        if (messageField && messageField.parentElement) {
+            messageField.parentElement.style.display = 'block';
+    }
+
+    // Event listeners for encryption type change and button clicks
+    if (encryptionSelect) {
+        encryptionSelect.addEventListener('change', toggleInputFields);
+    }
+
+    // Initial setup for form fields
+    toggleInputFields();
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const selectedMethod = encryptionSelect.value;
+        let error = null;
+        const action = document.getElementById('selected_action').value;
+
+        // Validate AES
+        if (selectedMethod === 'aes') {
+            const aesKey = document.getElementById('aes_key').value.trim();
+            if (aesKey) {
+                const keyLength = new TextEncoder().encode(aesKey).length;
+                if (![16, 24, 32].includes(keyLength)) {
+                    error = "AES key must be 16, 24, or 32 bytes";
+                }
+            }
+        }
+
+        // Validate Blowfish
+        if (selectedMethod === 'blowfish') {
+            const blowfishKey = document.getElementById('blowfish_key').value.trim();
+            if (!blowfishKey) {
+                error = "Blowfish key is required";
+            } else if (blowfishKey.length < 4 || blowfishKey.length > 56) {
+                error = "Blowfish key must be 4-56 characters";
+            }
+        }
+
+        // Validate ChaCha20
+        if (selectedMethod === 'chacha20') {
+            const chachaKey = document.getElementById('chacha20_key').value.trim();
+            if (!chachaKey) {
+                error = "ChaCha20 key is required";
+            } else if (!/^[0-9a-fA-F]{64}$/.test(chachaKey)) {
+                error = "ChaCha20 key must be 64 hexadecimal characters";
+            }
+        }
+
+        // Validate Vigenère
+        if (selectedMethod === 'vigenere') {
+            const vigenereKey = document.getElementById('vigenere_key').value.trim();
+            if (!vigenereKey) {
+                error = "Vigenère key is required";
+            } else if (!/^[A-Za-z]+$/.test(vigenereKey)) {
+                error = "Vigenère key must contain only letters";
+            }
+        }
+
+        if (error) {
+            e.preventDefault();
+            showError(error);
+        }
+    });
+    async function loadStoredKey(algorithm) {
+        try {
+            const response = await fetch(`/get_keys?algorithm=${algorithm}`);
+            const keys = await response.json();
+
+            if (keys.length === 0) {
+                alert('No stored keys found for ' + algorithm);
+                return;
+            }
+
+            // Create dropdown elements
+            const container = document.createElement('div');
+            container.className = 'input-group mb-3';
+
+            const select = document.createElement('select');
+            select.className = 'form-select';
+            select.name = algorithm + '_key';
+            select.required = true;
+
+            // Add key options
+            keys.forEach(key => {
+                const option = document.createElement('option');
+                option.value = key.key_value;
+                option.textContent = key.key_name
+                select.appendChild(option);
+            });
+
+            // Add revert button
+            const revertBtn = document.createElement('button');
+            revertBtn.className = 'btn btn-outline-danger';
+            revertBtn.type = 'button';
+            revertBtn.innerHTML = '<i class="fas fa-times"></i>';
+            revertBtn.onclick = () => {
+                container.replaceWith(originalInput);
+            };
+
+            // Replace existing input
+            const originalInput = document.getElementById(algorithm + '_key');
+            container.appendChild(select);
+            container.appendChild(revertBtn);
+            originalInput.replaceWith(container);
+
+        } catch (error) {
+            console.error('Error loading keys:', error);
+            alert('Error loading stored keys');
+        }
+    }
+
+    function showError(message) {
+        let errorDiv = document.querySelector('.alert-danger');
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger mt-3';
+            form.parentNode.insertBefore(errorDiv, form.nextSibling);
+        }
+        errorDiv.textContent = message;
+    }
+});
+</script>
+{% endblock %}

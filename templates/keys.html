@@ -1,0 +1,289 @@
+{% extends "layout.html" %}
+
+{% block title %}Key Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="history-title mb-4">Key Management</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Stored Keys Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Stored Keys
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Key Name</th>
+                            <th>Algorithm</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key in stored_keys %}
+                        <tr>
+                            <td>{{ key['key_name'] }}</td>
+                            <td>{{ key['algorithm'] }}</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-primary view-key"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#keyModal"
+                                            data-key-value="{{ key['key_value'] }}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary copy-key"
+                                            data-key-value="{{ key['key_value'] }}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <form method="POST" action="{{ url_for('keys.delete_key', key_id=key['id']) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Are you sure you want to delete this key?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center">No stored keys yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Key View Modal -->
+        <div class="modal fade" id="keyModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Key Value</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <pre class="bg-light p-3 rounded" id="modalKeyContent"></pre>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="copyKeyFromModal">
+                            <i class="fas fa-copy me-2"></i>Copy Key
+                        </button>
+                    </div>
+                  
+                </div>
+            </div>
+        </div>
+
+        <!-- Copy Success Toast -->
+        <div class="toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-3"
+            role="alert" aria-live="assertive" aria-atomic="true" id="copyToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Key copied to clipboard!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+
+        <!-- Generate Encryption Keys -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Generate Encryption Keys
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- Blowfish Key Generator -->
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <button class="btn btn-secondary w-100" onclick="generateBlowfishKey()">
+                                Generate Blowfish Key
+                            </button>
+                        </div>
+                        <div class="input-group mt-2">
+                            <input type="text" id="blowfish-key" class="form-control" readonly>
+                            <button class="btn btn-primary" onclick="saveGeneratedKey('blowfish')">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ChaCha20 Key Generator -->
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <button class="btn btn-secondary w-100" onclick="generateChaCha20Key()">
+                                Generate ChaCha20 Key
+                            </button>
+                        </div>
+                        <div class="input-group mt-2">
+                            <input type="text" id="chacha20-key" class="form-control" readonly>
+                            <button class="btn btn-primary" onclick="saveGeneratedKey('chacha20')">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- AES Key Generator -->
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <button class="btn btn-secondary w-100" onclick="generateAESKey()">
+                                Generate AES Key
+                            </button>
+                        </div>
+                        <div class="input-group mt-2">
+                            <input type="text" id="aes-key" class="form-control" readonly>
+                            <button class="btn btn-primary" onclick="saveGeneratedKey('aes')">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Manual Key Entry -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                Store New Key
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" name="key_name" class="form-control"
+                                   placeholder="Key Name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" name="key_value" class="form-control"
+                                   placeholder="Key Value" required>
+                        </div>
+                        <div class="col-md-3">
+                            <select name="algorithm" class="form-select" required>
+                                <option value="AES">AES</option>
+                                <option value="Blowfish">Blowfish</option>
+                                <option value="ChaCha20">ChaCha20</option>
+                                <option value="Vigenère">Vigenère</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" name="store_key"
+                                    class="btn btn-primary w-100"><i class="fas fa-save"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a href="/" class="btn btn-primary">Back to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+function generateBlowfishKey() {
+    const length = Math.floor(Math.random() * (56 - 4 + 1)) + 4;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+    let key = '';
+    for (let i = 0; i < length; i++) {
+        key += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('blowfish-key').value = key;
+}
+
+function generateChaCha20Key() {
+    const array = new Uint8Array(32);
+    window.crypto.getRandomValues(array);
+    const hexKey = Array.from(array, byte =>
+        byte.toString(16).padStart(2, '0')).join('');
+    document.getElementById('chacha20-key').value = hexKey;
+}
+
+function generateAESKey() {
+    const length = prompt("Choose AES key length (16, 24, or 32 bytes):", "16");
+    const validLengths = [16, 24, 32];
+    const parsedLength = parseInt(length);
+    if (!validLengths.includes(parsedLength)) {
+        alert("Invalid length. Please choose 16, 24, or 32.");
+        return;
+    }
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+    let key = '';
+    for (let i = 0; i < parsedLength; i++) {
+        key += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('aes-key').value = key;
+}
+
+
+function saveGeneratedKey(type) {
+    let keyValue;
+    let algorithm;
+    if (type === 'blowfish') {
+        keyValue = document.getElementById('blowfish-key').value;
+        algorithm = 'Blowfish';
+    } else if (type === 'chacha20') {
+        keyValue = document.getElementById('chacha20-key').value;
+        algorithm = 'ChaCha20';
+    } else if (type === 'aes') {
+        keyValue = document.getElementById('aes-key').value;
+        algorithm = 'AES';
+    }
+    document.querySelector('input[name="key_value"]').value = keyValue;
+    document.querySelector('select[name="algorithm"]').value = algorithm;
+    document.querySelector('input[name="key_name"]').focus();
+}
+
+// View Key Modal Handling
+const keyModal = document.getElementById('keyModal')
+keyModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget
+    const keyValue = button.getAttribute('data-key-value')
+    const modalBody = keyModal.querySelector('#modalKeyContent')
+    modalBody.textContent = keyValue
+})
+
+// Copy Key Handling
+document.querySelectorAll('.copy-key').forEach(button => {
+    button.addEventListener('click', () => {
+        const keyValue = button.getAttribute('data-key-value')
+        copyToClipboard(keyValue)
+    })
+})
+
+// Modal Copy Button
+document.getElementById('copyKeyFromModal').addEventListener('click', () => {
+    const keyValue = document.getElementById('modalKeyContent').textContent
+    copyToClipboard(keyValue)
+})
+
+// Copy Function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        const toast = new bootstrap.Toast(document.getElementById('copyToast'))
+        toast.show()
+    }).catch(err => {
+        console.error('Failed to copy:', err)
+    })
+}
+</script>
+{% endblock %}

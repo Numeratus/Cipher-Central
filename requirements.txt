@@ -1,0 +1,6 @@
+flask
+flask-wtf
+werkzeug
+pycryptodome
+flask-limiter
+python-dotenv

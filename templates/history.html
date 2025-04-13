@@ -1,0 +1,130 @@
+{% extends "layout.html" %}
+
+{% block title %}Message History{% endblock %}
+
+{% block content %}
+    <h1 class="history-title">Message History</h1>
+
+    <!-- Add Key Modal -->
+    <div class="modal fade" id="keyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Full Key/Parameter</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <pre class="p-3 rounded" id="modalKeyContent"></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="copyKeyContent()">
+                        <i class="fas fa-copy me-2"></i>Copy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table history-table">
+            <thead>
+                <tr>
+                    <th>Original Message</th>
+                    <th>Encryption Method</th>
+                    <th>Key/Parameter</th>
+                    <th>Result</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for message in messages %}
+                    <tr>
+                        <td>
+                            <span class="copyable-text" data-full-text="{{ message['original_message'] }}">
+                                {{ message["original_message"]|truncate(30) }}
+                            </span>
+                        </td>
+                        <td>{{ message["encryption_method"]|upper }}</td>
+                        <td>
+                            {% if message["encryption_param"] %}
+                                <span class="copyable-text key-preview"
+                                      data-full-text="{{ message['encryption_param'] }}"
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#keyModal"
+                                      data-key-value="{{ message['encryption_param'] }}">
+                                    {{ message["encryption_param"][:20] }}{% if message["encryption_param"]|length > 20 %}...{% endif %}
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="copyable-text" data-full-text="{{ message['result'] }}">
+                                {{ message["result"]|truncate(30) }}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('keys.delete_message', message_id=message['id']) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="clear-history-wrapper">
+        <a href="/" class="btn btn-primary">Back to Home</a>
+        <form method="POST" action="{{ url_for('keys.clear_history') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-danger">Clear History</button>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+// Universal copy handler
+function setupCopyableElements(selector) {
+    document.querySelectorAll(selector).forEach(element => {
+        element.style.cursor = 'pointer';
+        element.addEventListener('click', (event) => {
+            // Don't copy if clicking the key preview (let modal handle it)
+            if (!element.classList.contains('key-preview')) {
+                const fullText = element.getAttribute('data-full-text');
+                navigator.clipboard.writeText(fullText).then(() => {
+                    const toast = new bootstrap.Toast(document.getElementById('copyToast'));
+                    toast.show();
+                });
+            }
+        });
+    });
+}
+
+// Key modal handling
+const keyModal = document.getElementById('keyModal');
+keyModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget;
+    const keyValue = button.getAttribute('data-key-value');
+    const modalBody = keyModal.querySelector('#modalKeyContent');
+    modalBody.textContent = keyValue;
+});
+
+function copyKeyContent() {
+    const keyValue = document.getElementById('modalKeyContent').textContent;
+    navigator.clipboard.writeText(keyValue).then(() => {
+        const toast = new bootstrap.Toast(document.getElementById('copyToast'));
+        toast.show();
+    });
+}
+
+// Initialize all copyable elements
+document.addEventListener('DOMContentLoaded', () => {
+    setupCopyableElements('.copyable-text');
+});
+</script>
+{% endblock %}

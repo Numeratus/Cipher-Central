@@ -1,0 +1,316 @@
+{% extends "layout.html" %}
+
+{% block title %}Learn More{% endblock %}
+
+{% block content %}
+<div class="container learn-more-container">
+    <h1 class="main-title">Learn More about Encryption & Encoding Methods</h1>
+    <p class="page-description">Explore how encryption safeguards your data and how encoding transforms information.</p>
+
+    <div class="method-grid">
+        <!-- AES Card -->
+        <div class="method-card">
+            <div class="method-header">
+                <h2 class="method-name">AES Encryption</h2>
+            </div>
+            <div class="method-body">
+                <div class="method-description">
+                    <p>The Advanced Encryption Standard (AES) is a symmetric block cipher that has become the global standard for secure data encryption.
+                        AES operates on 128-bit blocks using key sizes of 128, 192, or 256 bits, and is used in a wide range of applications from SSL/TLS to file encryption.</p>
+                    <div class="technical-details">
+                        <h3 class="detail-heading">Key Features</h3>
+                        <ul class="feature-list">
+                            <li>128-bit block size</li>
+                            <li>Multiple key size options</li>
+                            <li>Extensively peer-reviewed security</li>
+                        </ul>
+
+                        <h3 class="detail-heading">Technical Specifications</h3>
+                        <ul class="spec-list">
+                            <li><span class="spec-label">Rounds:</span> 10-14 (key-dependent)</li>
+                            <li><span class="spec-label">Used In:</span> TLS, WPA2/3, file encryption</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="security-assessment">
+                    <h3 class="security-heading">Security Assessment</h3>
+                    <div class="security-rating high-security">
+                        <i class="fas fa-shield-alt"></i>
+                        <span class="security-level">Military-Grade Security</span>
+                    </div>
+                    <ul class="security-details">
+                        <li>Time to Crack (256-bit): ~1 billion years with current technology</li>
+                        <li>Quantum-Resistant: Yes (when using 256-bit keys)</li>
+                        <li>Recommended Use: Sensitive data, financial transactions</li>
+                    </ul>
+                </div>
+                <div class="source-link">
+                    <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard" target="_blank" rel="noopener">
+                        <i class="fas fa-external-link-alt"></i> Wikipedia Reference
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Base64 Card -->
+        <div class="method-card">
+            <div class="method-header">
+                <h2 class="method-name">Base64 Encoding</h2>
+            </div>
+            <div class="method-body">
+                <div class="method-description">
+                    <p>Base64 is a binary-to-text encoding scheme that represents binary data in an ASCII string format using 64 characters.
+                        It is defined in RFC 4648 and is widely used for encoding email attachments and embedding images in web.</p>
+                            <div class="technical-details">
+                        <h3 class="detail-heading">Applications</h3>
+                        <ul class="application-list">
+                            <li>Email attachments (MIME)</li>
+                            <li>Web development data URLs</li>
+                            <li>HTTP authentication</li>
+                        </ul>
+
+                        <h3 class="detail-heading">Technical Specifications</h3>
+                        <ul class="spec-list">
+                            <li><span class="spec-label">Input Grouping:</span> 3 bytes → 4 characters</li>
+                            <li><span class="spec-label">Character Set:</span> A-Z, a-z, 0-9, +, /</li>
+                            <li><span class="spec-label">Space Overhead:</span> ~33%</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="security-assessment">
+                    <h3 class="security-heading">Security Note</h3>
+                    <div class="security-rating no-security">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span class="security-level">Not an Encryption Method</span>
+                    </div>
+                    <ul class="security-details">
+                        <li>Decoding Time: Instantaneous (no key required)</li>
+                        <li>Security: Provides zero protection</li>
+                        <li>Warning: Never use for sensitive data</li>
+                    </ul>
+                </div>
+                <div class="source-link">
+                    <a href="https://en.wikipedia.org/wiki/Base64" target="_blank" rel="noopener">
+                        <i class="fas fa-external-link-alt"></i> Wikipedia Reference
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blowfish Card -->
+        <div class="method-card">
+            <div class="method-header">
+                <h2 class="method-name">Blowfish</h2>
+            </div>
+            <div class="method-body">
+                <div class="method-description">
+                    <p>Blowfish is a symmetric key block cipher that encrypts data in 64-bit blocks. It uses a variable-length key (up to 448 bits)
+                        and is designed to be fast, compact, and secure. Despite being an older algorithm, it remains popular in some legacy systems.</p>
+                    <div class="technical-details">
+                        <h3 class="detail-heading">Technical Specifications</h3>
+                        <ul class="spec-list">
+                            <li><span class="spec-label">Block Size:</span> 64 bits</li>
+                            <li><span class="spec-label">Key Length:</span> 32-448 bits</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="method-description">
+                    <div class="security-assessment">
+                        <h3 class="security-heading">Security Assessment</h3>
+                        <div class="security-rating medium-security">
+                            <i class="fas fa-shield-alt"></i>
+                            <span class="security-level">Deprecated Security</span>
+                        </div>
+                        <ul class="security-details">
+                            <li>Time to Crack: Weeks with modern hardware</li>
+                            <li>Vulnerabilities: Susceptible to birthday attacks</li>
+                            <li>Recommendation: Use AES instead</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="source-link">
+                    <a href="https://en.wikipedia.org/wiki/Blowfish_(cipher)" target="_blank" rel="noopener">
+                        <i class="fas fa-external-link-alt"></i> Wikipedia Reference
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Caesar Cipher Card -->
+        <div class="method-card">
+            <div class="method-header">
+                <h2 class="method-name">Caesar Cipher</h2>
+            </div>
+            <div class="method-body">
+                <div class="method-description">
+                    <p>The Caesar cipher is one of the earliest known cryptographic systems and a type of substitution cipher.
+                        Each letter in the plaintext is shifted a fixed number of positions down the alphabet. In this application,
+                        a default shift of 3 is used, but users can specify any shift from 1 to 25.</p>
+                    <div class="technical-details">
+                        <h3 class="detail-heading">Historical Context</h3>
+                        <div class="detail-content">
+                            <p>Widely attributed to Julius Caesar, this cipher was used to communicate securely by shifting letters.
+                                Its simplicity, however, makes it vulnerable to brute-force attacks.</p>
+                        </div>
+
+                        <h3 class="detail-heading">Technical Specifications</h3>
+                        <ul class="spec-list">
+                            <li><span class="spec-label">Type:</span> Monoalphabetic substitution</li>
+                            <li><span class="spec-label">Key Space:</span> 25 possible keys</li>
+
+                        </ul>
+                    </div>
+                </div>
+                <div class="security-assessment">
+                    <h3 class="security-heading">Security Assessment</h3>
+                    <div class="security-rating no-security">
+                        <i class="fas fa-unlock"></i>
+                        <span class="security-level">No Real Security</span>
+                    </div>
+                    <ul class="security-details">
+                        <li>Time to Crack: Milliseconds with brute-force</li>
+                        <li>Vulnerabilities: All 25 combinations easily testable</li>
+                        <li>Learning Value: Historical interest only</li>
+                    </ul>
+                </div>
+                <div class="source-link">
+                    <a href="https://en.wikipedia.org/wiki/Caesar_cipher" target="_blank" rel="noopener">
+                        <i class="fas fa-external-link-alt"></i> Wikipedia Reference
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ChaCha20 Card -->
+        <div class="method-card">
+            <div class="method-header">
+                <h2 class="method-name">ChaCha20</h2>
+            </div>
+            <div class="method-body">
+                <div class="method-description">
+                    <p> ChaCha20 is a modern stream cipher designed as an alternative to AES.
+                        It is known for its speed and security and is used in various protocols like TLS.
+                        The algorithm uses a 32-byte key and a 12-byte nonce to encrypt data.</p>
+                    <div class="technical-details">
+                        <h3 class="detail-heading">Technical Specifications</h3>
+                        <ul class="spec-list">
+                            <li><span class="spec-label">Key Length:</span> 256 bits</li>
+                            <li><span class="spec-label">Nonce:</span> 96 bits (12 bytes)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="security-assessment">
+                    <h3 class="security-heading">Security Assessment</h3>
+                    <div class="security-rating high-security">
+                        <i class="fas fa-shield-alt"></i>
+                        <span class="security-level">Modern Secure Standard</span>
+                    </div>
+                    <ul class="security-details">
+                        <li>Time to Crack: Computationally infeasible</li>
+                        <li>Performance: Faster than AES on mobile devices</li>
+                        <li>Recommended Use: TLS 1.3, mobile encryption</li>
+                    </ul>
+                </div>
+                <div class="source-link">
+                    <a href="https://en.wikipedia.org/wiki/ChaCha20" target="_blank" rel="noopener">
+                        <i class="fas fa-external-link-alt"></i> Wikipedia Reference
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROT13 Card -->
+        <div class="method-card">
+            <div class="method-header">
+                <h2 class="method-name">ROT13</h2>
+            </div>
+            <div class="method-body">
+                <div class="method-description">
+                    <p>ROT13 ("rotate by 13 places") is a variant of the Caesar cipher with a fixed shift of 13.
+                        Its symmetric nature means that encryption and decryption are the same process.
+                        Although it provides no real security, it is commonly used for simple obfuscation.</p>
+                    <div class="technical-details">
+                        <h3 class="detail-heading">Usage</h3>
+                        <div class="detail-content">
+                            <p>ROT13 is frequently used on the Internet to hide spoilers, jokes, and puzzle answers.</p>
+                        </div>
+
+                        <h3 class="detail-heading">Technical Specifications</h3>
+                        <ul class="spec-list">
+                            <li><span class="spec-label">Shift Value:</span> 13 (fixed)</li>
+                            <li><span class="spec-label">Character Coverage:</span> A-Z, a-z</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="method-description">
+                    <div class="security-assessment">
+                        <h3 class="security-heading">Security Note</h3>
+                        <div class="security-rating no-security">
+                            <i class="fas fa-eye-slash"></i>
+                            <span class="security-level">Trivial Obfuscation</span>
+                        </div>
+                        <ul class="security-details">
+                            <li>Reversal Time: Instantaneous</li>
+                            <li>Security: Provides no protection</li>
+                            <li>Typical Use: Hide spoilers, not secrets</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="source-link">
+                    <a href="https://en.wikipedia.org/wiki/ROT13" target="_blank" rel="noopener">
+                        <i class="fas fa-external-link-alt"></i> Wikipedia Reference
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vigenère Card -->
+        <div class="method-card">
+            <div class="method-header">
+                <h2 class="method-name">Vigenère Cipher</h2>
+            </div>
+            <div class="method-body">
+                <div class="method-description">
+                    <p>The Vigenère cipher is a polyalphabetic cipher that uses a keyword to determine the shift for each letter in the plaintext.
+                        Unlike the Caesar cipher, it repeats the keyword to encrypt the message, making frequency analysis more difficult.</p>
+                    <div class="technical-details">
+                        <h3 class="detail-heading">Historical Context</h3>
+                        <div class="detail-content">
+                            <p>Once considered "le chiffre indéchiffrable" or the"undecipherable cipher", the Vigenère cipher was popular for several centuries before modern techniques rendered it insecure.</p>
+                        </div>
+
+                        <h3 class="detail-heading">Technical Specifications</h3>
+                        <ul class="spec-list">
+                            <li><span class="spec-label">Type:</span> Polyalphabetic substitution</li>
+                            <li><span class="spec-label">Key:</span> User-provided keyword</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="security-assessment">
+                    <h3 class="security-heading">Security Assessment</h3>
+                    <div class="security-rating low-security">
+                        <i class="fas fa-lock-open"></i>
+                        <span class="security-level">Historical Cipher</span>
+                    </div>
+                    <ul class="security-details">
+                        <li>Time to Crack: Minutes with frequency analysis</li>
+                        <li>Historical: Broken in 19th century</li>
+                        <li>Learning Value: Cryptography basics</li>
+                    </ul>
+                </div>
+                <div class="source-link">
+                    <a href="https://en.wikipedia.org/wiki/Vigen%C3%A8re_cipher" target="_blank" rel="noopener">
+                        <i class="fas fa-external-link-alt"></i> Wikipedia Reference
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation-footer">
+        <a href="/" class="btn btn-primary back-button">
+            Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}
